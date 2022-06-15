@@ -7,6 +7,7 @@ from config import Config
 from youtube_search import YoutubeSearch
 from pyrogram.handlers import MessageHandler
 from pyrogram import Client, filters
+import yt_dlp
 from pyrogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -17,7 +18,7 @@ from pyrogram.types import (
 #config#
 
 bot = Client(
-    'DemonBot',
+    'MusicAzBot',
     bot_token = Config.BOT_TOKEN,
     api_id = Config.API_ID,
     api_hash = Config.API_HASH
@@ -33,7 +34,7 @@ def start(client, message):
         quote=False,
         reply_markup=InlineKeyboardMarkup(
             [[
-                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/Botsinator'),
+                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/MusicAzPlaylist'),
                     InlineKeyboardButton('Playlist 🎵', url=f'https://t.me/{Config.PLAYLIST_NAME}')
                   ],[
                     InlineKeyboardButton('Sahib 👨🏻‍💻', url=f'T.me/{Config.BOT_OWNER}')
@@ -42,6 +43,8 @@ def start(client, message):
         )
     )
     
+
+ 
 #kömək mesajı
 
 @bot.on_message(filters.command(['help']))
@@ -52,7 +55,7 @@ def help(client, message):
         quote=False,
         reply_markup=InlineKeyboardMarkup(
             [[
-                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/Botsinator'),
+                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/MusicAzPlaylist'),
                     InlineKeyboardButton('Playlist 🎵', url=f'https://t.me/{Config.PLAYLIST_NAME}')
                   ],[
                     InlineKeyboardButton('Sahib 👨🏻‍💻', url=f'T.me/{Config.BOT_OWNER}')
@@ -65,71 +68,52 @@ def help(client, message):
 
 @bot.on_message(filters.command("alive") & filters.user(Config.BOT_OWNER))
 async def live(client: Client, message: Message):
-    livemsg = await message.reply_text('`Mükəmməl İşləyirəm 😎`')
+    livemsg = await message.reply_text('`Mən Qoz Kimi İşləyirəm 😎`')
     
 #musiqi əmri#
 
-@bot.on_message(filters.command(['song']))
-def a(client, message):
-    query = ''
-    for i in message.command[1:]:
-        query += ' ' + str(i)
-    print(query)
-    m = message.reply('`🔎 Axtarılır...`')
-    ydl_opts = {"format": "bestaudio[ext=m4a]"}
+@bot.on_message(filters.command("song") & ~filters.edited)
+def bul(_, message):
+    query = " ".join(message.command[1:])
+    m = message.reply("<b>Musiqi Axtarılır ... 🔍</b>")
+    ydl_ops = {"format": "bestaudio[ext=m4a]"}
     try:
-        results = []
-        count = 0
-        while len(results) == 0 and count < 6:
-            if count>0:
-                time.sleep(1)
-            results = YoutubeSearch(query, max_results=1).to_dict()
-            count += 1
-        try:
-            link = f"https://youtube.com{results[0]['url_suffix']}"
-            title = results[0]["title"]
-            thumbnail = results[0]["thumbnails"][0]
-            duration = results[0]["duration"]
-            views = results[0]["views"]
-            thumb_name = f'thumb{message.message_id}.jpg'
-            thumb = requests.get(thumbnail, allow_redirects=True)
-            open(thumb_name, 'wb').write(thumb.content)
+        results = YoutubeSearch(query, max_results=1).to_dict()
+        link = f"https://youtube.com{results[0]['url_suffix']}"
+        title = results[0]["title"][:40]
+        thumbnail = results[0]["thumbnails"][0]
+        thumb_name = f"{title}.jpg"
+        thumb = requests.get(thumbnail, allow_redirects=True)
+        open(thumb_name, "wb").write(thumb.content)
+        duration = results[0]["duration"]
 
-        except Exception as e:
-            print(e)
-            m.edit('İstədiyiniz musiqi tapılmadı 😔')
-            return
     except Exception as e:
-        m.edit(
-            "İstədiyiniz musiqi tapılmadı 😔"
-        )
+        m.edit("İstədiyiniz musiqi tapılmadı 😔")
         print(str(e))
         return
     m.edit("`📥 Musiqini tapdım və endirirəm.`")
     try:
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_ops) as ydl:
             info_dict = ydl.extract_info(link, download=False)
             audio_file = ydl.prepare_filename(info_dict)
             ydl.process_info(info_dict)
         rep = f"🎵 Yüklədi [Music Bot](https://t.me/{Config.BOT_USERNAME})"
-        secmul, dur, dur_arr = 1, 0, duration.split(':')
-        for i in range(len(dur_arr)-1, -1, -1):
-            dur += (int(dur_arr[i]) * secmul)
+        secmul, dur, dur_arr = 1, 0, duration.split(":")
+        for i in range(len(dur_arr) - 1, -1, -1):
+            dur += int(float(dur_arr[i])) * secmul
             secmul *= 60
-        message.reply_audio(audio_file, caption=rep, parse_mode='md',quote=False, title=title, duration=dur, thumb=thumb_name, performer="@Botsinator")
+        m.edit("📤 Yüklənir..")
+        message.reply_audio(audio_file, caption=rep, parse_mode='md',quote=False, title=title, duration=dur, thumb=thumb_name, performer="MusicAzPlaylist")
         m.delete()
-        bot.send_audio(chat_id=Config.PLAYLIST_ID, audio=audio_file, caption=rep, performer="@Botsinator", parse_mode='md', title=title, duration=dur, thumb=thumb_name)
+        bot.send_audio(chat_id=Config.PLAYLIST_ID, audio=audio_file, caption=rep, performer="@MusicAzBot", parse_mode='md', title=title, duration=dur, thumb=thumb_name)
     except Exception as e:
         m.edit('**⚠️ Gözlənilməyən xəta yarandı.**\n**Xahiş edirəm xətanı sahibimə xəbərdar et!**')
         print(e)
+
     try:
         os.remove(audio_file)
         os.remove(thumb_name)
     except Exception as e:
         print(e)
-
-def time_to_seconds(time):
-    stringt = str(time)
-    return sum(int(x) * 60 ** i for i, x in enumerate(reversed(stringt.split(':'))))
 
 bot.run()
