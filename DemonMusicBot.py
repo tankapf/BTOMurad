@@ -18,7 +18,7 @@ from pyrogram.types import (
 #config#
 
 bot = Client(
-    'MusicAzBot',
+    'MM_Teamm1',
     bot_token = Config.BOT_TOKEN,
     api_id = Config.API_ID,
     api_hash = Config.API_HASH
@@ -28,13 +28,13 @@ bot = Client(
 
 @bot.on_message(filters.command(['start']))
 def start(client, message):
-    demon = f'👋 **Salam** {message.from_user.mention}\n\n**ℹ️ Mən musiqi, video yükləmək üçün yaradılmış botam və istədiyiniz mahnının sözlərini məndən öyrənə bilərsiniz 😁**\n\n**✅ Botun istifadə qaydasını öyrənmək üçün** /help **əmrindən istifadə edin**'
+    demon = f'👋 **Salam** {message.from_user.mention}\n\n**ℹ️ Mən musiqi yükləmək üçün yaradılmış botam və istədiyiniz mahnını məndən yükləyə bilərsiniz 😁**\n\n**✅ Botun istifadə qaydasını öyrənmək üçün** /help **əmrindən istifadə edin**'
     message.reply_text(
         text=demon, 
         quote=False,
         reply_markup=InlineKeyboardMarkup(
             [[
-                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/MusicAzPlaylist'),
+                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/MM_Teamm1'),
                     InlineKeyboardButton('Playlist 🎵', url=f'https://t.me/{Config.PLAYLIST_NAME}')
                   ],[
                     InlineKeyboardButton('Sahib 👨🏻‍💻', url=f'T.me/{Config.BOT_OWNER}')
@@ -55,7 +55,7 @@ def help(client, message):
         quote=False,
         reply_markup=InlineKeyboardMarkup(
             [[
-                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/MusicAzPlaylist'),
+                    InlineKeyboardButton('Rəsmi Kanal ✅', url='https://t.me/MM_Teamm1'),
                     InlineKeyboardButton('Playlist 🎵', url=f'https://t.me/{Config.PLAYLIST_NAME}')
                   ],[
                     InlineKeyboardButton('Sahib 👨🏻‍💻', url=f'T.me/{Config.BOT_OWNER}')
@@ -68,14 +68,14 @@ def help(client, message):
 
 @bot.on_message(filters.command("alive") & filters.user(Config.BOT_OWNER))
 async def live(client: Client, message: Message):
-    livemsg = await message.reply_text('`Mən Qoz Kimi İşləyirəm 😎`')
+    livemsg = await message.reply_text('`Mən Əla İşləyirəm 😎`')
     
 #musiqi əmri#
 
 @bot.on_message(filters.command("song") & ~filters.edited)
 def bul(_, message):
     query = " ".join(message.command[1:])
-    m = message.reply("<b>Musiqi Axtarılır ... 🔍</b>")
+    m = message.reply("<b>Musiqi Axtarılır... 🔍</b>")
     ydl_ops = {"format": "bestaudio[ext=m4a]"}
     try:
         results = YoutubeSearch(query, max_results=1).to_dict()
@@ -88,7 +88,7 @@ def bul(_, message):
         duration = results[0]["duration"]
 
     except Exception as e:
-        m.edit("İstədiyiniz musiqi tapılmadı 😔")
+        m.edit("İstədiyiniz musiqi tapılmadı 😐")
         print(str(e))
         return
     m.edit("`📥 Musiqini tapdım və endirirəm.`")
@@ -102,10 +102,10 @@ def bul(_, message):
         for i in range(len(dur_arr) - 1, -1, -1):
             dur += int(float(dur_arr[i])) * secmul
             secmul *= 60
-        m.edit("📤 Yüklənir..")
-        message.reply_audio(audio_file, caption=rep, parse_mode='md',quote=False, title=title, duration=dur, thumb=thumb_name, performer="MusicAzPlaylist")
+        m.edit("📤 Yüklənir...")
+        message.reply_audio(audio_file, caption=rep, parse_mode='md',quote=False, title=title, duration=dur, thumb=thumb_name, performer="MM_Musix")
         m.delete()
-        bot.send_audio(chat_id=Config.PLAYLIST_ID, audio=audio_file, caption=rep, performer="@MusicAzBot", parse_mode='md', title=title, duration=dur, thumb=thumb_name)
+        bot.send_audio(chat_id=Config.PLAYLIST_ID, audio=audio_file, caption=rep, performer="@MM_Teamm1", parse_mode='md', title=title, duration=dur, thumb=thumb_name)
     except Exception as e:
         m.edit('**⚠️ Gözlənilməyən xəta yarandı.**\n**Xahiş edirəm xətanı sahibimə xəbərdar et!**')
         print(e)
